@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Taxi Assignment Game</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="game-container">
+      <canvas id="game-canvas"></canvas>
+
+      <!-- UI Dashboard -->
+      <div id="dashboard">
+        <div class="dashboard-section">
+          <div id="fuel-meter">
+            <span>Fuel: </span>
+            <div class="meter">
+              <div class="meter-fill" id="fuel-fill"></div>
+            </div>
+          </div>
+          <div id="reputation">
+            Reputation: <span id="reputation-score">100</span>
+          </div>
+          <div id="earnings">
+            Earnings: $<span id="earnings-amount">0</span>
+          </div>
+        </div>
+
+        <div class="dashboard-section">
+          <div id="fare-meter">
+            <div>Fare: $<span id="current-fare">0.00</span></div>
+            <div>Distance: <span id="trip-distance">0.0</span>km</div>
+            <div>Time: <span id="trip-time">00:00</span></div>
+          </div>
+        </div>
+
+        <div class="dashboard-section">
+          <div id="missions-list">
+            <h3>Active Missions</h3>
+            <div id="missions-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Minimap -->
+      <div id="minimap">
+        <canvas id="minimap-canvas"></canvas>
+      </div>
+
+      <!-- Controls -->
+      <div id="controls">
+        <div class="control-group">
+          <button id="camera-toggle">Camera View</button>
+          <button id="gps-toggle">GPS</button>
+          <button id="radio-toggle">Radio</button>
+        </div>
+      </div>
+
+      <!-- Mobile Controls -->
+      <div id="mobile-controls" class="mobile-only">
+        <div class="joystick" id="movement-joystick"></div>
+        <div class="mobile-buttons">
+          <button id="brake-btn">Brake</button>
+          <button id="horn-btn">Horn</button>
+        </div>
+      </div>
+
+      <!-- GPS Panel -->
+      <div id="gps-panel" class="hidden">
+        <div id="gps-directions"></div>
+      </div>
+
+      <!-- Radio Panel -->
+      <div id="radio-panel" class="hidden">
+        <div class="radio-stations">
+          <button class="station-btn" data-station="jazz">Jazz FM</button>
+          <button class="station-btn" data-station="rock">Rock Radio</button>
+          <button class="station-btn" data-station="electronic">
+            Electronic
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/utils/Utils.js"></script>
+    <script src="js/utils/PathFinding.js"></script>
+    <script src="js/core/Camera.js"></script>
+    <script src="js/core/Scene.js"></script>
+    <script src="js/systems/Physics.js"></script>
+    <script src="js/systems/GPS.js"></script>
+    <script src="js/systems/Weather.js"></script>
+    <script src="js/systems/DayNight.js"></script>
+    <script src="js/entities/Taxi.js"></script>
+    <script src="js/entities/Passenger.js"></script>
+    <script src="js/entities/Traffic.js"></script>
+    <script src="js/ui/Dashboard.js"></script>
+    <script src="js/ui/Minimap.js"></script>
+    <script src="js/ui/UI.js"></script>
+    <script src="js/core/Game.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
