@@ -192,15 +192,20 @@ class TaxiGame {
       });
     });
   }
+  // In your Game.js
+  disableControls() {
+    this.controlsEnabled = false;
+  }
+
+  enableControls() {
+    this.controlsEnabled = true;
+  }
 
   async init() {
     try {
-      console.log("Game initialization started");
-
       // Initialize scene first
       await this.gameScene.init();
       this.gameScene.finalizeScene();
-      console.log("Scene initialized, fog exists:", !!this.gameScene.scene.fog);
 
       // Initialize taxi
       this.taxi = new Taxi();
@@ -217,7 +222,7 @@ class TaxiGame {
       this.gps.init(this.gameScene.cityLayout);
 
       // Initialize weather with scene
-      console.log("Initializing weather with scene:", this.gameScene.scene);
+
       this.weather.init(this.gameScene.scene);
 
       // Initialize day/night system
@@ -246,11 +251,8 @@ class TaxiGame {
       // Set initialization flag
       this.isInitialized = true;
 
-      console.log("Game initialized successfully");
-
       // Log performance stats
       const stats = this.gameScene.getPerformanceStats();
-      console.log("Scene performance stats:", stats);
     } catch (error) {
       console.error("Failed to initialize game:", error);
       throw error;
@@ -380,12 +382,8 @@ class TaxiGame {
 
   // In Game.js, fix the pickUpPassenger method:
   pickUpPassenger() {
-    console.log("Attempting to pick up passenger...");
-
     const nearbyPassenger = this.findNearbyPassenger();
     if (nearbyPassenger) {
-      console.log(`Picking up passenger: ${nearbyPassenger.name}`);
-
       // Pick up the passenger
       const passengerInfo = nearbyPassenger.pickUp();
 
@@ -410,12 +408,6 @@ class TaxiGame {
       }
 
       // Show pickup message
-      console.log(`✓ Passenger ${nearbyPassenger.name} picked up!`);
-      console.log(
-        `Destination: ${nearbyPassenger.destination.x.toFixed(
-          1
-        )}, ${nearbyPassenger.destination.z.toFixed(1)}`
-      );
     } else {
       console.log("No passenger nearby to pick up");
     }
@@ -450,12 +442,6 @@ class TaxiGame {
       this.gameState.reputation += Math.max(0, tip);
       this.gameState.score += Math.floor(totalEarnings * 10);
 
-      console.log(`💰 Trip completed!`);
-      console.log(`Fare: $${fare.toFixed(2)}`);
-      console.log(`Tip: $${tip.toFixed(2)}`);
-      console.log(`Total: $${totalEarnings.toFixed(2)}`);
-      console.log(`Total Earnings: $${this.gameState.earnings.toFixed(2)}`);
-
       // Clear current trip
       this.gameState.currentPassenger = null;
       this.gameState.activeTrip = null;
@@ -489,8 +475,6 @@ class TaxiGame {
       passenger.init(spawnPosition);
       this.passengers.push(passenger);
       this.gameScene.add(passenger.mesh);
-
-      console.log(`✓ New passenger spawned: ${passenger.name}`);
     } catch (error) {
       console.error("Error generating new passenger:", error);
     }

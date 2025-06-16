@@ -440,8 +440,6 @@ class Taxi {
 
     // Smoke particles
     this.createSmokeEffect();
-
-    console.log("Taxi has broken down!");
   }
 
   createSmokeEffect() {
@@ -481,13 +479,10 @@ class Taxi {
     if (this.body && this.body.material) {
       this.body.material.color.setHex(0xffff00);
     }
-
-    console.log("Taxi repaired!");
   }
 
   refuel(amount = 100) {
     this.fuel = Math.min(100, this.fuel + amount);
-    console.log(`Refueled! Fuel: ${this.fuel}%`);
   }
 
   isMoving() {

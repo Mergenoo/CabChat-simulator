@@ -1,28 +1,25 @@
-// Passenger.js and relevant Game.js passenger logic combined
-
 class Passenger {
   constructor() {
     this.mesh = null;
     this.position = new THREE.Vector3();
     this.destination = new THREE.Vector3();
-    this.mood = "neutral"; // 'happy', 'neutral', 'impatient', 'angry'
+    this.mood = "neutral";
     this.waitTime = 0;
-    this.maxWaitTime = 60; // seconds
-    this.waiting = true; // renamed from isWaiting to avoid confusion
+    this.maxWaitTime = 60;
+    this.waiting = true;
     this.tipAmount = 0;
-
-    // Passenger properties
     this.name = this.generateRandomName();
-    this.patience = 50 + Math.random() * 50; // 50-100
-    this.preferredSpeed = 0.7 + Math.random() * 0.6; // 0.7-1.3 multiplier
-
-    // Visual properties
+    this.patience = 50 + Math.random() * 50;
+    this.preferredSpeed = 0.7 + Math.random() * 0.6;
     this.color = this.getRandomColor();
     this.height = 1.6 + Math.random() * 0.4;
-
-    // Animation
     this.animationTime = 0;
     this.bobAmount = 0.1;
+
+    // Chat integration properties
+    this.isNearPlayer = false;
+    this.interactionRange = 8;
+    this.hasStartedChat = false;
   }
 
   async init(position) {
@@ -31,12 +28,130 @@ class Passenger {
     this.createPassengerMesh();
     this.createWaitingIndicator();
     this.setInitialMood();
+    this.setupChatInteraction(); // Add this
   }
 
+  setupChatInteraction() {
+    // Add click handler to mesh
+    if (this.mesh) {
+      this.mesh.userData = {
+        type: "passenger",
+        passenger: this,
+        clickable: true,
+        chatType: "passenger",
+        name: this.name,
+        onClick: () => this.handleClick(),
+      };
+    }
+  }
+
+  handleClick() {
+    // Check if chat system is available and passenger is waiting
+    if (this.waiting && window.gameChatSystem) {
+      console.log(`Clicked on passenger: ${this.name}`);
+      window.gameChatSystem.onNPCClicked("passenger", this.name);
+      this.hasStartedChat = true;
+    }
+  }
+
+  // This method will be called when passenger is picked up
+  pickUp() {
+    this.waiting = false;
+    this.calculateTip();
+
+    if (this.waitingIndicator) {
+      this.mesh.remove(this.waitingIndicator);
+      this.waitingIndicator = null;
+    }
+
+    // Start chat conversation when picked up
+    this.startPickupChat();
+
+    console.log(
+      `${this.name} picked up! Mood: ${
+        this.mood
+      }, Tip: $${this.tipAmount.toFixed(2)}`
+    );
+
+    return {
+      name: this.name,
+      destination: this.destination,
+      mood: this.mood,
+      tip: this.tipAmount,
+      waitTime: this.waitTime,
+    };
+  }
+
+  // NEW METHOD: Start chat when passenger is picked up
+  startPickupChat() {
+    // Wait a moment for the pickup to complete, then start chat
+    setTimeout(() => {
+      if (window.gameChatSystem) {
+        console.log(`Starting chat with picked up passenger: ${this.name}`);
+        window.gameChatSystem.startConversationWithNPC("passenger", this.name);
+      } else {
+        console.warn("Chat system not available");
+      }
+    }, 1000); // 1 second delay
+  }
+
+  update(deltaTime) {
+    if (!this.waiting) {
+      // If passenger is walking away, update that animation
+      if (this.walkAnimation) {
+        this.updateWalkingAway();
+      }
+      return;
+    }
+
+    this.waitTime += deltaTime;
+    this.animationTime += deltaTime;
+
+    // Check proximity to player for interaction hints
+    this.checkPlayerProximity();
+
+    this.updateMood();
+    this.animatePassenger(deltaTime);
+    this.updateWaitingIndicator(deltaTime);
+
+    if (this.waitTime > this.maxWaitTime) {
+      this.giveUpWaiting();
+    }
+  }
+
+  // NEW METHOD: Check if player is near for interaction hints
+  checkPlayerProximity() {
+    // Only check if we have a game instance and taxi
+    if (!window.game || !window.game.taxi) return;
+
+    const playerPosition = window.game.taxi.position;
+    const distance = this.position.distanceTo(playerPosition);
+    const wasNear = this.isNearPlayer;
+
+    this.isNearPlayer = distance < this.interactionRange;
+
+    // Notify chat system about proximity changes
+    if (this.isNearPlayer && !wasNear && this.waiting) {
+      // Player got near
+      if (window.gameChatSystem) {
+        window.gameChatSystem.onNearNPC({
+          type: "passenger",
+          name: this.name,
+          distance: distance,
+        });
+      }
+    } else if (!this.isNearPlayer && wasNear) {
+      // Player moved away
+      if (window.gameChatSystem) {
+        window.gameChatSystem.onLeaveNPC();
+      }
+    }
+  }
+
+  // Rest of your existing methods remain the same...
   createPassengerMesh() {
     this.mesh = new THREE.Group();
 
-    // Body - CylinderGeometry
     const bodyGeometry = new THREE.CylinderGeometry(
       0.3,
       0.3,
@@ -50,7 +165,6 @@ class Passenger {
     body.position.y = this.height / 2;
     body.castShadow = true;
 
-    // Head
     const headGeometry = new THREE.SphereGeometry(0.25);
     const headMaterial = new THREE.MeshLambertMaterial({
       color: this.color.skin,
@@ -59,7 +173,6 @@ class Passenger {
     head.position.y = this.height - 0.25;
     head.castShadow = true;
 
-    // Hat/Hair
     const hatGeometry = new THREE.SphereGeometry(0.27);
     const hatMaterial = new THREE.MeshLambertMaterial({
       color: this.color.hair,
@@ -68,7 +181,6 @@ class Passenger {
     hat.position.y = this.height - 0.1;
     hat.scale.y = 0.5;
 
-    // Arms
     const armGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 6);
     const armMaterial = new THREE.MeshLambertMaterial({
       color: this.color.skin,
@@ -82,7 +194,6 @@ class Passenger {
     rightArm.position.set(0.4, this.height - 0.5, 0);
     rightArm.rotation.z = -0.3;
 
-    // Legs
     const legGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 6);
     const legMaterial = new THREE.MeshLambertMaterial({
       color: this.color.pants,
@@ -94,7 +205,6 @@ class Passenger {
     const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
     rightLeg.position.set(0.15, 0.4, 0);
 
-    // Assemble passenger
     this.mesh.add(body);
     this.mesh.add(head);
     this.mesh.add(hat);
@@ -103,18 +213,15 @@ class Passenger {
     this.mesh.add(leftLeg);
     this.mesh.add(rightLeg);
 
-    // Store references
     this.body = body;
     this.head = head;
     this.leftArm = leftArm;
     this.rightArm = rightArm;
 
-    // Position the mesh
     this.mesh.position.copy(this.position);
   }
 
   createWaitingIndicator() {
-    // Exclamation mark above head
     const indicatorGeometry = new THREE.SphereGeometry(0.1);
     const indicatorMaterial = new THREE.MeshBasicMaterial({
       color: 0xffff00,
@@ -127,8 +234,6 @@ class Passenger {
     );
     this.waitingIndicator.position.set(0, this.height + 0.5, 0);
     this.mesh.add(this.waitingIndicator);
-
-    // Pulsing animation
     this.indicatorPulse = 0;
   }
 
@@ -157,10 +262,8 @@ class Passenger {
       "Anderson",
       "Thomas",
     ];
-
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-
     return `${firstName} ${lastName}`;
   }
 
@@ -181,10 +284,8 @@ class Passenger {
   }
 
   generateRandomDestination() {
-    // This would use the city layout to generate a valid destination
     const angle = Math.random() * Math.PI * 2;
     const distance = 50 + Math.random() * 100;
-
     return new THREE.Vector3(
       this.position.x + Math.cos(angle) * distance,
       0,
@@ -194,8 +295,7 @@ class Passenger {
 
   setInitialMood() {
     const moods = ["happy", "neutral", "impatient"];
-    const weights = [0.3, 0.5, 0.2]; // 30% happy, 50% neutral, 20% impatient
-
+    const weights = [0.3, 0.5, 0.2];
     let random = Math.random();
     let cumulativeWeight = 0;
 
@@ -206,23 +306,7 @@ class Passenger {
         break;
       }
     }
-
     this.updateMoodVisuals();
-  }
-
-  update(deltaTime) {
-    if (!this.waiting) return;
-
-    this.waitTime += deltaTime;
-    this.animationTime += deltaTime;
-
-    this.updateMood();
-    this.animatePassenger(deltaTime);
-    this.updateWaitingIndicator(deltaTime);
-
-    if (this.waitTime > this.maxWaitTime) {
-      this.giveUpWaiting();
-    }
   }
 
   animatePassenger(deltaTime) {
@@ -253,7 +337,6 @@ class Passenger {
     if (!this.waitingIndicator) return;
 
     this.indicatorPulse += deltaTime * 3;
-
     const scale = 1 + Math.sin(this.indicatorPulse) * 0.3;
     this.waitingIndicator.scale.setScalar(scale);
 
@@ -283,7 +366,6 @@ class Passenger {
         this.mood = "happy";
       }
     }
-
     this.updateMoodVisuals();
   }
 
@@ -316,7 +398,6 @@ class Passenger {
 
     const walkSpeed = 2;
     const walkDistance = 20;
-
     const startPosition = this.mesh.position.clone();
     const endPosition = startPosition
       .clone()
@@ -358,30 +439,6 @@ class Passenger {
     }
   }
 
-  pickUp() {
-    this.waiting = false;
-    this.calculateTip();
-
-    if (this.waitingIndicator) {
-      this.mesh.remove(this.waitingIndicator);
-      this.waitingIndicator = null;
-    }
-
-    console.log(
-      `${this.name} picked up! Mood: ${
-        this.mood
-      }, Tip: $${this.tipAmount.toFixed(2)}`
-    );
-
-    return {
-      name: this.name,
-      destination: this.destination,
-      mood: this.mood,
-      tip: this.tipAmount,
-      waitTime: this.waitTime,
-    };
-  }
-
   calculateTip() {
     let baseTip = 2.0;
 
@@ -396,7 +453,6 @@ class Passenger {
       0.2,
       1 - (this.waitTime / this.maxWaitTime) * 0.8
     );
-
     this.tipAmount = baseTip * moodModifiers[this.mood] * waitModifier;
   }
 
@@ -413,7 +469,6 @@ class Passenger {
       "Residential Area",
       "Business District",
     ];
-
     return locations[Math.floor(Math.random() * locations.length)];
   }
 
@@ -441,7 +496,6 @@ class Passenger {
   }
 }
 
-// Export for module systems
 if (typeof module !== "undefined" && module.exports) {
   module.exports = Passenger;
 }

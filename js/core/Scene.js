@@ -15,15 +15,10 @@ class GameScene {
   }
 
   async init() {
-    console.log("GameScene init started");
-
     this.setupLighting();
     this.setupEnvironment();
     this.generateCity();
     this.setupSkybox();
-
-    console.log("GameScene init completed, fog initialized:", !!this.scene.fog);
-    console.log("Total shadow lights:", this.currentShadowLights);
   }
 
   setupLighting() {
@@ -51,8 +46,6 @@ class GameScene {
   }
 
   setupEnvironment() {
-    console.log("Setting up environment...");
-
     // Ground plane
     const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
     const groundMaterial = new THREE.MeshLambertMaterial({
@@ -67,7 +60,6 @@ class GameScene {
 
     // Initialize fog
     this.scene.fog = new THREE.Fog(0xcccccc, 100, 400);
-    console.log("Fog initialized:", this.scene.fog);
   }
 
   generateCity() {
@@ -345,27 +337,24 @@ class GameScene {
 
   // UPDATED: Calculate intersections properly
   calculateIntersections(citySize, blockSize, streetWidth) {
-  this.intersectionPositions = [];
+    this.intersectionPositions = [];
 
-  // Streets are created for each block, so intersections occur between blocks
-  for (let x = 0; x < citySize - 1; x++) {
-    for (let z = 0; z < citySize - 1; z++) {
-      // Calculate block positions
-      const blockX = (x - citySize / 2) * (blockSize + streetWidth);
-      const blockZ = (z - citySize / 2) * (blockSize + streetWidth);
-      
-    
-      const intersectionX = blockX + blockSize / 2 + streetWidth / 2;
-      const intersectionZ = blockZ + blockSize / 2 + streetWidth / 2;
-      
-      this.intersectionPositions.push(
-        new THREE.Vector3(intersectionX, 0, intersectionZ)
-      );
+    // Streets are created for each block, so intersections occur between blocks
+    for (let x = 0; x < citySize - 1; x++) {
+      for (let z = 0; z < citySize - 1; z++) {
+        // Calculate block positions
+        const blockX = (x - citySize / 2) * (blockSize + streetWidth);
+        const blockZ = (z - citySize / 2) * (blockSize + streetWidth);
+
+        const intersectionX = blockX + blockSize / 2 + streetWidth / 2;
+        const intersectionZ = blockZ + blockSize / 2 + streetWidth / 2;
+
+        this.intersectionPositions.push(
+          new THREE.Vector3(intersectionX, 0, intersectionZ)
+        );
+      }
     }
   }
-
-  console.log(`Generated ${this.intersectionPositions.length} intersections at actual street crossings`);
-}
 
   // UPDATED: Better traffic light positioning at actual intersections
   createTrafficLight(x, z, intersectionId) {
@@ -754,7 +743,6 @@ class GameScene {
     // Disable shadows on excess lights
     for (let i = this.maxShadowLights; i < lights.length; i++) {
       lights[i].castShadow = false;
-      console.log(`Disabled shadows on light ${i} to optimize performance`);
     }
   }
 
@@ -792,11 +780,8 @@ class GameScene {
 
   // Method to reduce scene complexity if needed
   optimizeScene() {
-    console.log("Optimizing scene for better performance...");
-
     // Get current stats
     const stats = this.getPerformanceStats();
-    console.log("Scene stats:", stats);
 
     // Optimize lights
     this.optimizeLights();
@@ -805,7 +790,6 @@ class GameScene {
     if (stats.shadowLights > this.maxShadowLights) {
       this.sunLight.shadow.mapSize.width = 512;
       this.sunLight.shadow.mapSize.height = 512;
-      console.log("Reduced shadow map quality");
     }
 
     // Disable shadows on some objects if scene is too complex
@@ -839,8 +823,6 @@ class GameScene {
     this.optimizeScene();
 
     const finalStats = this.getPerformanceStats();
-    console.log("Final scene stats:", finalStats);
-    console.log(`Traffic lights created: ${finalStats.trafficLights}`);
 
     if (finalStats.shadowLights > this.maxShadowLights) {
       console.warn(

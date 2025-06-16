@@ -7,16 +7,12 @@ class WeatherSystem {
   }
 
   init(scene) {
-    console.log("WeatherSystem init called with:", scene);
-    console.log("Scene has fog?", scene.fog);
     this.scene = scene;
     this.setupWeatherEffects(); // Make sure this method exists
   }
 
   // Add the missing method
   setupWeatherEffects() {
-    console.log("Setting up weather effects...");
-
     // Initialize particle systems
     this.createRainSystem();
     this.createSnowSystem();

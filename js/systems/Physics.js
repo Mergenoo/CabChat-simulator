@@ -24,7 +24,6 @@ class PhysicsSystem {
     this.scene = scene;
     this.initializeSpatialGrid();
     this.buildCollisionObjects();
-    console.log("Physics system initialized");
   }
 
   initializeSpatialGrid() {
@@ -45,8 +44,6 @@ class PhysicsSystem {
         this.spatialGrid.set(key, []);
       }
     }
-
-    console.log(`Spatial grid initialized: ${gridWidth}x${gridHeight} cells`);
   }
 
   buildCollisionObjects() {

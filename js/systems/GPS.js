@@ -40,7 +40,6 @@ class GPSSystem {
   setDestination(destination) {
     this.destination = destination.clone();
     this.isActive = true;
-    console.log("GPS destination set:", destination);
   }
 
   clearDestination() {
@@ -48,7 +47,6 @@ class GPSSystem {
     this.currentRoute = null;
     this.isActive = false;
     this.clearRouteVisualization();
-    console.log("GPS destination cleared");
   }
 
   update(currentPosition) {
@@ -92,8 +90,6 @@ class GPSSystem {
   }
 
   calculateRoute(start, end) {
-    console.log("Calculating GPS route from", start, "to", end);
-
     try {
       const route = this.pathfinder.findPath(start, end);
 
@@ -104,8 +100,6 @@ class GPSSystem {
           currentSegment: 0,
           instructions: this.generateInstructions(route),
         };
-
-        console.log("Route calculated:", this.currentRoute);
       } else {
         console.warn("No route found to destination");
         this.currentRoute = null;
@@ -221,8 +215,6 @@ class GPSSystem {
       distance > 10
         ? `In ${Math.round(distance)} meters, ${instruction.toLowerCase()}`
         : instruction;
-
-    console.log("GPS:", distanceText);
 
     // Update UI
     this.updateGPSPanel(distanceText);
@@ -391,7 +383,6 @@ class GPSSystem {
   reroute(currentPosition) {
     if (!this.destination) return;
 
-    console.log("Rerouting GPS...");
     this.calculateRoute(currentPosition, this.destination);
   }
 

@@ -662,8 +662,6 @@ class TrafficVehicle {
     this.setRandomDirection();
     this.currentSpeed = 0;
     this.stuckTimer = 0;
-
-    console.log("Traffic vehicle respawned");
   }
 
   // Method to update vehicle state for debugging
@@ -801,8 +799,6 @@ class TrafficManager {
     await vehicle.init(spawnPosition);
     this.scene.add(vehicle.mesh);
     this.vehicles.push(vehicle);
-
-    console.log(`Spawned traffic vehicle. Total: ${this.vehicles.length}`);
   }
 
   getRandomStreetPosition() {
@@ -884,7 +880,6 @@ class TrafficManager {
 
       // Remove vehicles that have been stuck too long
       if (vehicle.stuckTimer > vehicle.maxStuckTime * 3) {
-        console.log("Removing stuck vehicle");
         this.removeVehicle(i);
         continue;
       }
@@ -895,7 +890,6 @@ class TrafficManager {
       );
 
       if (minDistanceToStreet > 50) {
-        console.log("Removing vehicle too far from streets");
         this.removeVehicle(i);
         continue;
       }
@@ -915,7 +909,6 @@ class TrafficManager {
     for (let i = this.vehicles.length - 1; i >= 0; i--) {
       this.removeVehicle(i);
     }
-    console.log("All traffic vehicles cleared");
   }
 
   // Method to set traffic density
