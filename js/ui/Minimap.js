@@ -144,7 +144,8 @@ class Minimap {
       this.drawPassengers();
     }
 
-    this.drawDestination();
+    // Destination marker disabled per user request
+    // this.drawDestination();
     this.drawPlayer();
     this.drawPickupZone();
 

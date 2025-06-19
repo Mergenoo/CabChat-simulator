@@ -54,26 +54,17 @@ class Dashboard {
   }
 
   updateFuel(targetFuel) {
-    // Smooth animation to target fuel level
-    const diff = targetFuel - this.animatedValues.fuel;
-    this.animatedValues.fuel += diff * 0.1;
+    // Demo: static fuel level
+    targetFuel = 75;
+    this.animatedValues.fuel = targetFuel;
 
     if (this.elements.fuel) {
       const percentage = Math.max(0, Math.min(100, this.animatedValues.fuel));
       this.elements.fuel.style.width = `${percentage}%`;
 
-      // Change color based on fuel level
-      if (percentage < 20) {
-        this.elements.fuel.style.background = "#ff4444";
-        this.elements.fuel.classList.add("pulsing");
-      } else if (percentage < 50) {
-        this.elements.fuel.style.background = "#ffaa00";
-        this.elements.fuel.classList.remove("pulsing");
-      } else {
-        this.elements.fuel.style.background =
-          "linear-gradient(90deg, #ff4444, #ffaa00, #44ff44)";
-        this.elements.fuel.classList.remove("pulsing");
-      }
+      // Static demo color (green)
+      this.elements.fuel.style.background = "#44ff44";
+      this.elements.fuel.classList.remove("pulsing");
     }
   }
 
