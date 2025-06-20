@@ -51,7 +51,7 @@ class Taxi {
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
     body.position.y = 1;
     body.castShadow = true;
-    body.receiveShadow = true;
+    body.receiveShadow = false;
 
     // Roof
     const roofGeometry = new THREE.BoxGeometry(3.5, 1, 4);
@@ -59,6 +59,7 @@ class Taxi {
     const roof = new THREE.Mesh(roofGeometry, roofMaterial);
     roof.position.y = 2.25;
     roof.castShadow = true;
+    roof.receiveShadow = false;
 
     // Windows
     const windowGeometry = new THREE.BoxGeometry(3.6, 0.8, 3.8);
@@ -69,6 +70,7 @@ class Taxi {
     });
     const windows = new THREE.Mesh(windowGeometry, windowMaterial);
     windows.position.y = 2.25;
+    windows.receiveShadow = false;
 
     // Taxi sign
     const signGeometry = new THREE.BoxGeometry(2, 0.5, 0.8);

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3D Taxi Assignment Game</title>
+    <title>🚖CabChat</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -16,29 +16,52 @@
           <div id="fuel-meter">
             <span>Fuel: </span>
             <div class="meter">
-              <div class="meter-fill" id="fuel-fill"></div>
+              <div class="meter-fill" id="fuel-fill" style="width: 75%;"></div>
             </div>
           </div>
-          <div id="reputation">
-            Reputation: <span id="reputation-score">100</span>
+          <div id="rating">
+            Rating: <span id="rating-stars">★★★★☆</span> <span id="rating-score">4.2</span>
           </div>
           <div id="earnings">
-            Earnings: $<span id="earnings-amount">0</span>
+            Earnings: $<span id="earnings-amount">256</span>
           </div>
         </div>
 
         <div class="dashboard-section">
+          <h4 class="trip-header">This Trip</h4>
           <div id="fare-meter">
-            <div>Fare: $<span id="current-fare">0.00</span></div>
-            <div>Distance: <span id="trip-distance">0.0</span>km</div>
-            <div>Time: <span id="trip-time">00:00</span></div>
+            <div>Fare: $<span id="current-fare">8.75</span></div>
+            <div>Distance: <span id="trip-distance">2.3</span>km</div>
+            <div>Time: <span id="trip-time">05:42</span></div>
           </div>
         </div>
 
         <div class="dashboard-section">
-          <div id="missions-list">
-            <h3>Active Missions</h3>
-            <div id="missions-container"></div>
+          <div id="daily-bonus">
+            <h3>Daily Bonus</h3>
+            <div id="bonus-container">
+              <div class="bonus-item">
+                <div class="bonus-label">Complete 10 trips</div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 70%"></div>
+                </div>
+                <div class="progress-text">7/10</div>
+              </div>
+              <div class="bonus-item">
+                <div class="bonus-label">Drive 50 miles</div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 64%"></div>
+                </div>
+                <div class="progress-text">32/50</div>
+              </div>
+              <div class="bonus-item">
+                <div class="bonus-label">Maintain 4.5+ rating</div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 93%"></div>
+                </div>
+                <div class="progress-text">4.2/4.5</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -46,6 +69,16 @@
       <!-- Minimap -->
       <div id="minimap">
         <canvas id="minimap-canvas"></canvas>
+        <svg class="minimap-overlay" viewBox="0 0 200 200">
+          <!-- GPS Route following street grid -->
+          <path d="M 100 160 L 100 140 L 120 140 L 120 100 L 140 100 L 140 80 L 160 80 L 160 60" 
+                stroke="#00ff88" 
+                stroke-width="3" 
+                fill="none" 
+                stroke-dasharray="5,3"
+                class="gps-route">
+          </path>
+        </svg>
       </div>
 
       <!-- Controls -->
@@ -60,17 +93,37 @@
 
       <!-- Mobile Controls -->
       <div id="mobile-controls" class="mobile-only">
-        <div class="joystick" id="movement-joystick"></div>
         <div class="mobile-buttons">
-          <button id="brake-btn">Brake</button>
-          <button id="horn-btn">Horn</button>
-          <button id="chat-mobile-btn">💬</button>
+          <button id="dropoff-btn">Drop Off Rider</button>
+          <button id="honk-btn">Honk</button>
+        </div>
+      </div>
+      
+      <!-- Current Rider Info -->
+      <div id="current-rider" class="rider-info">
+        <h4>Current Rider</h4>
+        <div class="rider-profile">
+          <img src="assets/stacy.jpeg" alt="Stacy" class="rider-avatar">
+          <div class="rider-details">
+            <div class="rider-name">Stacy</div>
+            <div class="rider-destination">→ Financial District</div>
+          </div>
         </div>
       </div>
 
       <!-- GPS Panel -->
-      <div id="gps-panel" class="hidden">
-        <div id="gps-directions"></div>
+      <div id="gps-panel" class="visible">
+        <div id="gps-directions">
+          <div class="gps-instruction">
+            <div class="instruction-text">In 200m, turn right onto Market St</div>
+            <div class="destination-info">
+              Destination: Financial District - 425 Market St
+            </div>
+            <div class="route-info">
+              Distance: 1.2km | ETA: 3 minutes
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Radio Panel -->
@@ -87,20 +140,15 @@
       <!-- Chat Toggle Button (Floating) -->
 
       <!-- Chat Panel (Right Side) -->
-      <div class="chat-panel" id="chatPanel">
+      <div class="chat-panel open compact" id="chatPanel">
         <!-- Chat Header -->
         <div class="chat-header">
           <div class="npc-info">
-            <div class="npc-name" id="npcName">Select an NPC</div>
-            <div class="npc-role" id="npcRole">Click on NPCs in the game</div>
+            <div class="npc-name" id="npcName">Stacy</div>
           </div>
           <button class="chat-close" onclick="closeChat()">×</button>
         </div>
 
-        <!-- Chat Status -->
-        <div class="chat-status" id="chatStatus">
-          Click on an NPC to start chatting
-        </div>
 
         <!-- Audio Controls -->
         <div class="audio-controls">
@@ -118,30 +166,54 @@
         </div>
 
         <!-- Chat Messages -->
-        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="message npc">
+            <div class="message-sender">Stacy</div>
+            <div class="message-content">Hi! picking up for Stacy?</div>
+          </div>
+          <div class="message user">
+            <div class="message-sender">You</div>
+            <div class="message-content">Yes, how's it going?</div>
+          </div>
+          <div class="message npc">
+            <div class="message-sender">Stacy</div>
+            <div class="message-content">I'm doing great. Coming in from Seattle, this city feels so different. You been driving long?</div>
+          </div>
+          <div class="message user">
+            <div class="message-sender">You</div>
+            <div class="message-content">I'm been driving for a couple years now. Born & raised in SF!</div>
+          </div>
+          <div class="message npc">
+            <div class="message-sender">Stacy</div>
+            <div class="message-content">Ah, a true local! I'm just a visitor, but I love the energy here. Especially in the tech scene. Speaking of which, I'm actually on my way to Inworld's offices. Have you heard anything about them?</div>
+          </div>
+          <div class="message user">
+            <div class="message-sender">You</div>
+            <div class="message-content">No I'm not really in the tech scene. I'm an accountant and I drive uber on the side.</div>
+          </div>
+          <div class="message npc">
+            <div class="message-sender">Stacy</div>
+            <div class="message-content">No worries, not everyone's into the tech bubble. They're making some exciting moves in AI-powered entertainment. Got a big board meeting there today. Fingers crossed the numbers are good. Speaking of which, I should probably review their latest financials before the meeting.</div>
+          </div>
+        </div>
 
-        <!-- Chat Input -->
-        <div class="chat-input-container">
-          <input
-            type="text"
-            class="chat-input"
-            id="chatInput"
-            placeholder="Type your message..."
-            maxlength="500"
-          />
-          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-            Send
-          </button>
+        <!-- Voice Interface -->
+        <div class="voice-interface">
+          <div class="waveform">
+            <div class="wave-bar" style="height: 20%"></div>
+            <div class="wave-bar" style="height: 45%"></div>
+            <div class="wave-bar" style="height: 30%"></div>
+            <div class="wave-bar" style="height: 60%"></div>
+            <div class="wave-bar" style="height: 25%"></div>
+            <div class="wave-bar" style="height: 55%"></div>
+            <div class="wave-bar" style="height: 35%"></div>
+            <div class="wave-bar" style="height: 70%"></div>
+            <div class="wave-bar" style="height: 40%"></div>
+            <div class="wave-bar" style="height: 50%"></div>
+          </div>
         </div>
       </div>
 
-      <!-- NPC Interaction Indicator -->
-      <div class="npc-interaction-hint" id="npcHint" style="display: none">
-        <div class="hint-content">
-          <span class="hint-icon">💬</span>
-          <span class="hint-text">Press TAB or Click to Chat</span>
-        </div>
-      </div>
     </div>
 
     <!-- Game Scripts -->

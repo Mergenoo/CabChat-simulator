@@ -6,10 +6,10 @@ class TrafficVehicle {
     this.velocity = new THREE.Vector3();
 
     // Vehicle properties
-    this.speed = 10 + Math.random() * 15;
+    this.speed = 25 + Math.random() * 20; // Increased from 10+15 to 25+20
     this.maxSpeed = this.speed;
     this.currentSpeed = 0;
-    this.acceleration = 8;
+    this.acceleration = 15; // Increased from 8 to 15
     this.brakeForce = 15;
     this.turnSpeed = 1.5;
 
@@ -99,35 +99,65 @@ class TrafficVehicle {
       taillight: taillightMaterial,
     };
 
-    // Main body
+    // Main body (lower part)
     const bodyGeometry = new THREE.BoxGeometry(
       dimensions.width,
-      dimensions.height,
+      dimensions.height * 0.6,
       dimensions.length
     );
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.position.y = dimensions.height / 2;
-    body.castShadow = true;
-    body.receiveShadow = true;
+    body.position.y = dimensions.height * 0.3;
+    body.castShadow = false; // Reduce shadows
+    body.receiveShadow = false;
 
     this.mesh.add(body);
     this.body = body;
 
-    // Windows
+    // Roof/Upper body (makes it look more 3D)
+    const roofGeometry = new THREE.BoxGeometry(
+      dimensions.width * 0.8,
+      dimensions.height * 0.4,
+      dimensions.length * 0.7
+    );
+    const roof = new THREE.Mesh(roofGeometry, bodyMaterial);
+    roof.position.y = dimensions.height * 0.8;
+    roof.castShadow = false;
+    roof.receiveShadow = false;
+    this.mesh.add(roof);
+
+    // Windows (more realistic)
     if (this.vehicleType !== "truck") {
-      const windowGeometry = new THREE.BoxGeometry(
-        dimensions.width * 0.9,
-        dimensions.height * 0.4,
-        dimensions.length * 0.6
-      );
       const windowMaterial = new THREE.MeshLambertMaterial({
-        color: 0x87ceeb,
-        transparent: true,
-        opacity: 0.7,
+        color: 0x4682B4, // Steel blue instead of transparent to avoid artifacts
+        transparent: false,
+        opacity: 1.0,
       });
-      const windows = new THREE.Mesh(windowGeometry, windowMaterial);
-      windows.position.y = dimensions.height * 0.7;
-      this.mesh.add(windows);
+
+      // Front windshield
+      const frontWindowGeometry = new THREE.PlaneGeometry(dimensions.width * 0.7, dimensions.height * 0.3);
+      const frontWindow = new THREE.Mesh(frontWindowGeometry, windowMaterial);
+      frontWindow.position.set(0, dimensions.height * 0.8, dimensions.length * 0.35);
+      frontWindow.rotation.x = -0.1; // Slight angle
+      this.mesh.add(frontWindow);
+
+      // Rear windshield
+      const rearWindow = new THREE.Mesh(frontWindowGeometry, windowMaterial);
+      rearWindow.position.set(0, dimensions.height * 0.8, -dimensions.length * 0.35);
+      rearWindow.rotation.x = 0.1; // Slight angle
+      this.mesh.add(rearWindow);
+
+      // Side windows
+      const sideWindowGeometry = new THREE.PlaneGeometry(dimensions.length * 0.4, dimensions.height * 0.25);
+      
+      const leftWindow = new THREE.Mesh(sideWindowGeometry, windowMaterial);
+      leftWindow.position.set(-dimensions.width * 0.4, dimensions.height * 0.8, 0);
+      leftWindow.rotation.y = Math.PI / 2;
+      this.mesh.add(leftWindow);
+
+      const rightWindow = new THREE.Mesh(sideWindowGeometry, windowMaterial);
+      rightWindow.position.set(dimensions.width * 0.4, dimensions.height * 0.8, 0);
+      rightWindow.rotation.y = -Math.PI / 2;
+      this.mesh.add(rightWindow);
     }
 
     // Wheels
@@ -141,34 +171,39 @@ class TrafficVehicle {
   }
 
   getVehicleDimensions() {
+    // Increased sizes to match taxi scale and make more visible
     const dimensions = {
-      sedan: { width: 3.5, height: 1.4, length: 7 },
-      suv: { width: 4, height: 2, length: 8 },
-      truck: { width: 4.5, height: 2.5, length: 10 },
-      van: { width: 4, height: 2.2, length: 9 },
-      sports: { width: 3.2, height: 1.2, length: 6.5 },
+      sedan: { width: 4, height: 1.5, length: 8 },
+      suv: { width: 4.5, height: 2.2, length: 9 },
+      truck: { width: 5, height: 2.8, length: 12 },
+      van: { width: 4.5, height: 2.5, length: 10 },
+      sports: { width: 3.8, height: 1.3, length: 7.5 },
     };
 
     return dimensions[this.vehicleType] || dimensions.sedan;
   }
 
   createWheels(dimensions) {
-    const wheelGeometry = new THREE.CylinderGeometry(0.6, 0.6, 0.3);
+    // Larger wheels to match increased vehicle size
+    const wheelRadius = Math.min(0.8, dimensions.height * 0.4);
+    const wheelGeometry = new THREE.CylinderGeometry(wheelRadius, wheelRadius, 0.4);
     const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
 
+    // Adjust wheel positions for larger vehicles
     const wheelPositions = [
-      { x: -dimensions.width / 2 + 0.5, z: dimensions.length / 2 - 1 },
-      { x: dimensions.width / 2 - 0.5, z: dimensions.length / 2 - 1 },
-      { x: -dimensions.width / 2 + 0.5, z: -dimensions.length / 2 + 1 },
-      { x: dimensions.width / 2 - 0.5, z: -dimensions.length / 2 + 1 },
+      { x: -dimensions.width / 2 + 0.7, z: dimensions.length / 2 - 1.5 },
+      { x: dimensions.width / 2 - 0.7, z: dimensions.length / 2 - 1.5 },
+      { x: -dimensions.width / 2 + 0.7, z: -dimensions.length / 2 + 1.5 },
+      { x: dimensions.width / 2 - 0.7, z: -dimensions.length / 2 + 1.5 },
     ];
 
     this.wheels = [];
     wheelPositions.forEach((pos) => {
       const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
       wheel.rotation.z = Math.PI / 2;
-      wheel.position.set(pos.x, 0.6, pos.z);
-      wheel.castShadow = true;
+      wheel.position.set(pos.x, wheelRadius, pos.z);
+      wheel.castShadow = false; // Reduce shadows
+      wheel.receiveShadow = false;
       this.mesh.add(wheel);
       this.wheels.push(wheel);
     });
@@ -268,18 +303,31 @@ class TrafficVehicle {
   }
 
   generatePath() {
+    // Generate path that follows street grid instead of random movement
     const pathLength = 5 + Math.floor(Math.random() * 10);
     this.path = [];
 
     let currentPos = this.position.clone();
 
     for (let i = 0; i < pathLength; i++) {
-      const angle = ((Math.random() - 0.5) * Math.PI) / 2;
-      const distance = 20 + Math.random() * 30;
-
+      // Move in grid-aligned directions (N, S, E, W) to follow streets
+      const directions = [
+        { x: 0, z: 48 },   // North
+        { x: 0, z: -48 },  // South  
+        { x: 48, z: 0 },   // East
+        { x: -48, z: 0 },  // West
+      ];
+      
+      const direction = directions[Math.floor(Math.random() * directions.length)];
+      
       const nextPos = currentPos.clone();
-      nextPos.x += Math.sin(angle) * distance;
-      nextPos.z += Math.cos(angle) * distance;
+      nextPos.x += direction.x;
+      nextPos.z += direction.z;
+
+      // Keep vehicles within city bounds
+      const cityBounds = 300;
+      nextPos.x = Math.max(-cityBounds, Math.min(cityBounds, nextPos.x));
+      nextPos.z = Math.max(-cityBounds, Math.min(cityBounds, nextPos.z));
 
       this.path.push(nextPos);
       currentPos = nextPos;
@@ -355,7 +403,7 @@ class TrafficVehicle {
   }
 
   avoidObstacles(deltaTime) {
-    const shouldBrake = this.checkTrafficAhead();
+    const shouldBrake = this.checkTrafficAhead() || this.checkTrafficLights();
     this.isBraking = shouldBrake;
 
     if (shouldBrake) {
@@ -370,10 +418,11 @@ class TrafficVehicle {
       );
     }
 
+    // Reduce lane changing for more realistic traffic
     this.laneChangeTimer += deltaTime;
     if (this.laneChangeTimer > this.laneChangeDelay && !this.isChangingLanes) {
-      if (Math.random() < 0.1) {
-        this.startLaneChange();
+      if (Math.random() < 0.02) { // Reduced from 0.1 to 0.02 for less erratic movement
+        this.performStreetTurn();
       }
       this.laneChangeTimer = 0;
     }
@@ -383,15 +432,39 @@ class TrafficVehicle {
     return Math.random() < 0.05;
   }
 
-  startLaneChange() {
+  checkTrafficLights() {
+    // Simple traffic light compliance - stop at intersections occasionally
+    const distanceToNextIntersection = this.getDistanceToNextIntersection();
+    if (distanceToNextIntersection < 15 && Math.random() < 0.3) {
+      return true; // Stop for red light
+    }
+    return false;
+  }
+
+  getDistanceToNextIntersection() {
+    // Simplified intersection detection based on grid
+    const blockSize = 48;
+    const nextIntersectionX = Math.round(this.position.x / blockSize) * blockSize;
+    const nextIntersectionZ = Math.round(this.position.z / blockSize) * blockSize;
+    
+    const distanceX = Math.abs(this.position.x - nextIntersectionX);
+    const distanceZ = Math.abs(this.position.z - nextIntersectionZ);
+    
+    return Math.min(distanceX, distanceZ);
+  }
+
+  performStreetTurn() {
+    // Instead of lane changing, perform proper street turns at intersections
     this.isChangingLanes = true;
 
-    const laneOffset = (Math.random() - 0.5) * 6;
-    this.targetPosition.x += laneOffset;
+    // Turn to follow street grid (90-degree turns)
+    const turnDirections = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
+    const newDirection = turnDirections[Math.floor(Math.random() * turnDirections.length)];
+    this.rotation.y = newDirection;
 
     setTimeout(() => {
       this.isChangingLanes = false;
-    }, 2000 + Math.random() * 2000);
+    }, 1000 + Math.random() * 1000);
   }
 
   handleStuckSituation() {
